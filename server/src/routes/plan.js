@@ -3,21 +3,32 @@ const { generatePlan } = require('../services/aiClient');
 
 const router = express.Router();
 
-// POST /api/plan
 router.post('/', async (req, res) => {
   try {
     const { category, benefit } = req.body;
-    if (!category || !benefit || !benefit.title) {
-      return res.status(400).json({ error: 'category and benefit.title required' });
+
+    // Validation
+    if (!category || typeof category !== 'string') {
+      return res.status(400).json({ error: 'category (string) is required' });
+    }
+    if (!benefit || typeof benefit !== 'object') {
+      return res.status(400).json({ error: 'benefit object is required' });
+    }
+    if (!benefit.title || typeof benefit.title !== 'string') {
+      return res.status(400).json({ error: 'benefit.title (string) is required' });
     }
 
-    const steps = await generatePlan(String(category), {
-      title: String(benefit.title),
-      coverage: benefit.coverage ? String(benefit.coverage) : undefined,
-      description: benefit.description ? String(benefit.description) : undefined,
-    });
+    // Normalize benefit values
+    const cleanBenefit = {
+      title: benefit.title.trim(),
+      coverage: benefit.coverage ? String(benefit.coverage).trim() : undefined,
+      description: benefit.description ? String(benefit.description).trim() : undefined,
+    };
+
+    const steps = await generatePlan(category.trim(), cleanBenefit);
 
     return res.json({ steps });
+
   } catch (err) {
     console.error('plan error:', err);
     return res.status(500).json({ error: 'plan generation failed' });
