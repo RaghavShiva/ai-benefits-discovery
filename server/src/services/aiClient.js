@@ -15,10 +15,10 @@ const ALLOWED = [
     'Unknown'
 ];
 
-const MODEL = process.env.LLM_MODEL || 'gemini-2.5-flash';
-const API_KEY = process.env.GEMINI_API_KEY || process.env.LLM_API_KEY;
+const MODEL = process.env.LLM_MODEL;
+const API_KEY = process.env.LLM_API_KEY;
 
-if (!API_KEY) throw new Error('GEMINI_API_KEY or LLM_API_KEY is required');
+if (!API_KEY) throw new Error('LLM_API_KEY is required');
 
 let GoogleGenerativeAI;
 try {
