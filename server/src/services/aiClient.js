@@ -188,4 +188,67 @@ Description: ${description}
     }
 }
 
-module.exports = { classifyText, generatePlan };
+// Clarifying question generation
+async function askClarifyingQuestion(text) {
+    if (!text || !String(text).trim()) {
+        return { question: 'Could you provide more details about your health need?', category: 'OPD', confidence: 0.3 };
+    }
+
+    const promptText = `
+You are a health benefits advisor. The user's input was unclear or ambiguous. Generate a ONE-SENTENCE clarifying question to help better understand their health need.
+
+User's input:
+"${String(text).trim()}"
+
+IMPORTANT: Return a JSON object with:
+1. A short, friendly clarifying question (one sentence)
+2. A best-guess category based on the input
+3. A confidence score (0.0 to 1.0)
+
+Return EXACTLY this format:
+{"question":"<one sentence question>","category":"<category_name>","confidence":<0.0-1.0>}
+
+Available categories: ${ALLOWED.filter(c => c !== 'Unknown').join(', ')}
+
+Rules:
+- Question should be specific and helpful
+- Category should be your best guess
+- Confidence should reflect uncertainty (lower if very unclear)
+- Return ONLY the JSON object
+  `.trim();
+
+    const callLLM = async () => {
+        const raw = await callModel(promptText, { temperature: 0.3, maxOutputTokens: 200 });
+        const parsed = tryParseJSON(raw);
+
+        if (parsed?.question && parsed?.category) {
+            const cat = parsed.category.trim();
+            const category = ALLOWED.includes(cat) ? cat : 'OPD';
+            const confidence = Math.min(Math.max(parsed.confidence || 0.4, 0), 1);
+            return {
+                question: String(parsed.question).trim(),
+                category,
+                confidence
+            };
+        }
+
+        // Fallback
+        return {
+            question: 'Could you provide more specific details about your health concern?',
+            category: 'OPD',
+            confidence: 0.35
+        };
+    };
+
+    try {
+        return await withRetries(callLLM, 2, 600);
+    } catch (e) {
+        return {
+            question: 'Could you provide more specific details about your health concern?',
+            category: 'OPD',
+            confidence: 0.35
+        };
+    }
+}
+
+module.exports = { classifyText, generatePlan, askClarifyingQuestion };

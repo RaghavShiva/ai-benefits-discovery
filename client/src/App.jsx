@@ -6,14 +6,16 @@ import ClassificationScreen from './screens/ClassificationScreen'
 import BenefitsList from './screens/BenefitsList'
 import PlanScreen from './screens/PlanScreen'
 import Breadcrumbs from './components/Breadcrumbs'
+import ThemeToggle from './components/ThemeToggle'
 
 export default function App() {
   return (
     <BenefitProvider>
       <div className="app">
         <header className="header">
-          <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Link to="/" className="logo">Benefits AI</Link>
+            <ThemeToggle />
           </div>
         </header>
 

@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BENEFITS from '../data/benefits'
 import { useBenefit } from '../context/BenefitContext'
-import { useToast } from '../context/ToastContext'
 
 function scoreBenefit(benefit, text) {
     if (!text) return 0
@@ -19,12 +18,8 @@ function scoreBenefit(benefit, text) {
 export default function BenefitsList() {
     const { category, setSelectedBenefit, text, setCategory } = useBenefit()
     const navigate = useNavigate()
-    const toast = useToast()
 
-    useEffect(() => {
-        if (!category) return
-        toast.push(`Detected category: ${category}`, { duration: 2500 })
-    }, [category])
+    // Removed unnecessary toast - category is already shown in UI
 
     if (!category) {
         return (
@@ -73,10 +68,7 @@ export default function BenefitsList() {
     }
     const shown = ranked.slice(0, maxToShow)
 
-    useEffect(() => {
-        const n = shown.length
-        toast.push(n ? `Showing ${n} relevant benefit${n > 1 ? 's' : ''}` : 'No direct matches — showing defaults', { duration: 2200 })
-    }, [JSON.stringify(shown)])
+    // Removed unnecessary toast - benefits are clearly displayed
 
     return (
         <div className="card fade-in">

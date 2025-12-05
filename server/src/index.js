@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const classifyRouter = require('./routes/classify');
 const planRouter = require('./routes/plan');
+const clarifyRouter = require('./routes/clarify');
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -15,6 +16,7 @@ app.get('/', (_req, res) => res.json({ status: 'ok', service: 'ai-benefits-disco
 
 app.use('/api/classify', classifyRouter);
 app.use('/api/plan', planRouter);
+app.use('/api/clarify', clarifyRouter);
 
 app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);

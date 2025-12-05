@@ -25,7 +25,7 @@ export default function PlanScreen() {
                 const res = await generatePlan(category, selectedBenefit, abortRef.current.signal)
                 setPlan(res.steps || [])
                 setLoading(false)
-                toast.push('Plan generated', { duration: 2200 })
+                // Removed toast - plan is clearly displayed
             } catch (e) {
                 if (e?.name === 'AbortError') return
                 setError(e.message || 'Failed to generate plan')
@@ -48,7 +48,7 @@ export default function PlanScreen() {
                     const res = await generatePlan(category, selectedBenefit)
                     setPlan(res.steps || [])
                     setLoading(false)
-                    toast.push('Plan regenerated', { duration: 2200 })
+                    // Removed toast - plan is clearly displayed
                 } catch (e) {
                     setError(e.message || 'Failed to generate plan')
                     setLoading(false)

@@ -21,6 +21,26 @@
   --transition: all 0.2s ease;
 }
 
+[data-theme='dark'] {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-light: #1e3a8a;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --border: #334155;
+  --border-hover: #475569;
+  --text: #f1f5f9;
+  --text-light: #cbd5e1;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -43,6 +63,32 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+}
+
+[data-theme='dark'] .header {
+  background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+}
+
+.theme-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
 }
 
 .header>div {
@@ -262,6 +308,12 @@ textarea.input {
   gap: 12px;
 }
 
+[data-theme='dark'] .error {
+  background: #7f1d1d;
+  border-color: #991b1b;
+  color: #fca5a5;
+}
+
 .error::before {
   content: '⚠';
   font-size: 1.25rem;
@@ -291,9 +343,17 @@ textarea.input {
   transition: var(--transition);
 }
 
+[data-theme='dark'] .steps li {
+  background: #1e293b;
+}
+
 .steps li:hover {
   background: #f3f4f6;
   transform: translateX(4px);
+}
+
+[data-theme='dark'] .steps li:hover {
+  background: #334155;
 }
 
 .steps li::before {
@@ -372,7 +432,7 @@ textarea.input {
 .toast-viewport {
   position: fixed;
   right: 20px;
-  bottom: 20px;
+  top: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -381,33 +441,40 @@ textarea.input {
 }
 
 .toast {
-  background: #0f172a;
-  color: #fff;
+  background: #ffffff;
+  color: #1f2937;
   padding: 14px 18px;
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
   cursor: pointer;
-  transform-origin: right bottom;
+  transform-origin: top right;
   animation: toastIn 0.25s ease;
   font-size: 0.9375rem;
   line-height: 1.5;
   transition: var(--transition);
 }
 
+[data-theme='dark'] .toast {
+  background: #1e293b;
+  color: #f1f5f9;
+  border-color: var(--border);
+}
+
 .toast:hover {
-  transform: scale(1.02);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateX(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
 @keyframes toastIn {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(8px);
+    transform: translateX(20px) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateX(0) scale(1);
   }
 }
 
