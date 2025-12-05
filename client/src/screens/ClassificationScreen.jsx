@@ -54,18 +54,57 @@ export default function ClassificationScreen() {
 
   return (
     <div className="card">
-      <h2>Classifying…</h2>
-      <p className="muted">We analyzed: <strong>{text}</strong></p>
+      <h2>Analyzing your health need…</h2>
+      <p className="muted">We're processing: <strong>"{text}"</strong></p>
 
-      {loading && <div className="loader">Loading AI…</div>}
+      {loading && (
+        <div className="loader">
+          <div className="loader-spinner"></div>
+          <span>Analyzing your health need with AI…</span>
+        </div>
+      )}
 
       {!loading && detected && (
-        <div style={{ marginTop: 12 }}>
-          <div style={{ padding: 12, borderRadius: 8, border: '1px solid #eef2ff', background: '#fff' }}>
-            <h3 style={{ margin: 0 }}>{detected.category}</h3>
-            <p className="muted" style={{ marginTop: 6 }}>
-              Confidence: {(detected.confidence ?? 0).toFixed(2)}
-            </p>
+        <div className="fade-in" style={{ marginTop: 20 }}>
+          <div style={{
+            padding: 20,
+            borderRadius: 'var(--radius-lg)',
+            border: '2px solid var(--accent)',
+            background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+            boxShadow: 'var(--shadow-md)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'var(--accent)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontWeight: '700',
+                fontSize: '1.125rem'
+              }}>
+                ✓
+              </div>
+              <h3 style={{ margin: 0, color: 'var(--text)' }}>{detected.category}</h3>
+            </div>
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '6px 12px',
+              background: '#fff',
+              borderRadius: 'var(--radius)',
+              fontSize: '0.875rem',
+              fontWeight: '500'
+            }}>
+              <span style={{ color: 'var(--muted)' }}>Confidence:</span>
+              <span style={{ color: 'var(--accent)', fontWeight: '600' }}>
+                {Math.round((detected.confidence ?? 0) * 100)}%
+              </span>
+            </div>
           </div>
 
           <div className="actions" style={{ marginTop: 12 }}>
@@ -77,19 +116,34 @@ export default function ClassificationScreen() {
       )}
 
       {!loading && !detected && !error && (
-        <div className="muted" style={{ marginTop: 12 }}>
-          If nothing appears, click Try again.
-          <div className="actions" style={{ marginTop: 8 }}>
-            <button className="btn" onClick={runClassify}>Try again</button>
-            <button className="btn ghost" onClick={onEdit}>Edit input</button>
+        <div className="fade-in" style={{ marginTop: 20 }}>
+          <div style={{
+            padding: '20px',
+            background: '#f9fafb',
+            borderRadius: 'var(--radius)',
+            border: '2px dashed var(--border)',
+            textAlign: 'center'
+          }}>
+            <p className="muted" style={{ marginBottom: '16px' }}>
+              Classification is taking longer than expected. Please try again.
+            </p>
+            <div className="actions" style={{ justifyContent: 'center' }}>
+              <button className="btn" onClick={runClassify}>Try again</button>
+              <button className="btn ghost" onClick={onEdit}>Edit input</button>
+            </div>
           </div>
         </div>
       )}
 
       {error && (
-        <div className="error" style={{ marginTop: 12 }}>
-          <p>{error}</p>
-          <div className="actions">
+        <div className="error fade-in" style={{ marginTop: 20 }}>
+          <p style={{ margin: 0 }}><strong>Unable to classify your health need</strong></p>
+          <p style={{ margin: '8px 0 0 0', fontSize: '0.875rem' }}>
+            {error.includes('failed') || error.includes('error')
+              ? 'We encountered an issue processing your request. Please try again or rephrase your health need.'
+              : error}
+          </p>
+          <div className="actions" style={{ marginTop: '16px' }}>
             <button className="btn" onClick={runClassify}>Try again</button>
             <button className="btn ghost" onClick={onEdit}>Edit input</button>
           </div>

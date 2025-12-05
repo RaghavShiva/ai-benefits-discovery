@@ -12,7 +12,9 @@ export default function App() {
     <BenefitProvider>
       <div className="app">
         <header className="header">
-          <Link to="/" className="logo">Benefits AI</Link>
+          <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px' }}>
+            <Link to="/" className="logo">Benefits AI</Link>
+          </div>
         </header>
 
         <main className="container">

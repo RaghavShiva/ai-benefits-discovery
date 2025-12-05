@@ -86,15 +86,23 @@ async function classifyText(text) {
     }
 
     const promptText = `
-You are a strict classifier. Choose the best single category from:
+You are a health benefits classifier. Analyze the user's health-related need and classify it into ONE category.
+
+Available categories:
 ${ALLOWED.filter(c => c !== 'Unknown').join(', ')}
 
-Return EXACTLY:
-{"category":"<category>"}
+IMPORTANT: Return ONLY the category name as JSON. Do not include any explanation or additional text.
 
-User text:
+Return EXACTLY this format (nothing else):
+{"category":"<category_name>"}
+
+User's health need:
 "${String(text).trim()}"
-If ambiguous, choose "OPD".
+
+Rules:
+- Choose the most appropriate single category
+- If the need doesn't clearly fit any category, return "OPD" (Outpatient Department)
+- Return ONLY the JSON object, no other text
   `.trim();
 
     const callLLM = async () => {
@@ -160,20 +168,22 @@ Description: ${description}
         const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
         if (lines.length >= 3) return lines.slice(0, 3);
 
+        // Fallback: Generic 3-step plan
         return [
-            `Open the benefits portal and search for "${benefitTitle}".`,
-            `Contact HR or provider to confirm coverage.`,
-            `Submit documents through the portal.`
+            `Contact your HR department or access the benefits portal to verify eligibility for ${benefitTitle}.`,
+            `Gather required documentation (ID, medical records if needed) and submit your request through the portal or HR.`,
+            `Follow up with HR or the benefits provider to confirm approval and next steps for availing ${benefitTitle}.`
         ];
     };
 
     try {
         return await withRetries(callLLM, 2, 600);
     } catch {
+        // Final fallback: Generic actionable steps
         return [
-            `Open the portal and search "${benefitTitle}".`,
-            `Contact HR or provider to confirm.`,
-            `Submit required documents.`
+            `Contact your HR department or access the benefits portal to verify eligibility for ${benefitTitle}.`,
+            `Gather required documentation (ID, medical records if needed) and submit your request through the portal or HR.`,
+            `Follow up with HR or the benefits provider to confirm approval and next steps for availing ${benefitTitle}.`
         ];
     }
 }

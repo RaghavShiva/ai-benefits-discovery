@@ -28,11 +28,27 @@ export default function BenefitsList() {
 
     if (!category) {
         return (
-            <div className="card">
-                <h3>No category found</h3>
-                <p className="muted">Please go back and enter your need.</p>
+            <div className="card fade-in">
+                <h3>No category detected</h3>
+                <p className="muted" style={{ marginBottom: '20px' }}>
+                    We couldn't classify your health need into a benefit category. This might happen if:
+                </p>
+                <ul style={{
+                    marginLeft: '20px',
+                    marginBottom: '20px',
+                    color: 'var(--text-light)',
+                    lineHeight: '1.8'
+                }}>
+                    <li>The input was too vague or unclear</li>
+                    <li>The health need doesn't match available categories</li>
+                    <li>There was a processing error</li>
+                </ul>
+                <p className="muted" style={{ marginBottom: '20px' }}>
+                    Please try rephrasing your health need or go back to edit your input.
+                </p>
                 <div className="actions">
-                    <button className="btn" onClick={() => navigate('/')}>Home</button>
+                    <button className="btn" onClick={() => navigate('/classify')}>Try classification again</button>
+                    <button className="btn ghost" onClick={() => navigate('/')}>Edit input</button>
                 </div>
             </div>
         )
@@ -47,7 +63,15 @@ export default function BenefitsList() {
         return positives.length > 0 ? positives : pool
     }, [pool, text])
 
-    const shown = ranked.slice(0, 3)
+    // Show 2-4 benefits based on availability (requirements: 2-4 cards)
+    const availableCount = ranked.length
+    let maxToShow = availableCount
+    if (availableCount < 2) {
+        maxToShow = Math.min(availableCount, 2) // Show what's available if less than 2
+    } else {
+        maxToShow = Math.min(availableCount, 4) // Show up to 4, but at least 2
+    }
+    const shown = ranked.slice(0, maxToShow)
 
     useEffect(() => {
         const n = shown.length
@@ -56,36 +80,93 @@ export default function BenefitsList() {
 
     return (
         <div className="card fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2>Recommended benefits — {category}</h2>
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                flexWrap: 'wrap',
+                gap: '16px',
+                marginBottom: '8px'
+            }}>
                 <div>
-                    <button className="btn ghost" onClick={() => { setCategory(null); navigate('/classify') }}>Change category</button>
+                    <h2 style={{ marginBottom: '4px' }}>Recommended benefits</h2>
+                    <p className="muted" style={{ margin: 0 }}>
+                        Category: <strong style={{ color: 'var(--accent)' }}>{category}</strong>
+                    </p>
                 </div>
+                <button
+                    className="btn ghost"
+                    onClick={() => { setCategory(null); navigate('/classify') }}
+                    style={{ flexShrink: 0 }}
+                >
+                    Change category
+                </button>
             </div>
 
-            <div className="grid" style={{ marginTop: 12 }}>
-                {shown.map(b => (
-                    <article key={b.id} className="benefit">
-                        <h3>{b.title}</h3>
-                        <p className="muted">{b.coverage}</p>
-                        <p>{b.description}</p>
-                        <div className="actions">
-                            <button
-                                className="btn"
-                                onClick={() => {
-                                    setSelectedBenefit(b)
-                                    navigate('/plan')
-                                }}
-                            >
-                                View plan
-                            </button>
-                        </div>
-                    </article>
-                ))}
-            </div>
+            {shown.length === 0 ? (
+                <div className="fade-in" style={{
+                    padding: '40px 20px',
+                    textAlign: 'center',
+                    color: 'var(--muted)'
+                }}>
+                    <p style={{ marginBottom: '16px', fontSize: '1.125rem' }}>No benefits available</p>
+                    <p style={{ marginBottom: '20px' }}>
+                        We couldn't find any benefits for the "{category}" category.
+                        This might be a new category or there may be an issue with the data.
+                    </p>
+                    <div className="actions" style={{ justifyContent: 'center' }}>
+                        <button className="btn ghost" onClick={() => { setCategory(null); navigate('/classify') }}>
+                            Change category
+                        </button>
+                        <button className="btn ghost" onClick={() => navigate('/')}>
+                            Start over
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="grid">
+                    {shown.map((b, index) => (
+                        <article
+                            key={b.id}
+                            className="benefit fade-in"
+                            style={{ animationDelay: `${index * 0.1}s` }}
+                        >
+                            <div>
+                                <h3>{b.title}</h3>
+                                <p className="muted" style={{
+                                    fontWeight: '600',
+                                    marginBottom: '12px',
+                                    fontSize: '0.9375rem'
+                                }}>
+                                    {b.coverage}
+                                </p>
+                                <p style={{
+                                    margin: 0,
+                                    color: 'var(--text-light)',
+                                    lineHeight: '1.6'
+                                }}>
+                                    {b.description}
+                                </p>
+                            </div>
+                            <div className="actions" style={{ marginTop: 'auto', paddingTop: '16px' }}>
+                                <button
+                                    className="btn"
+                                    onClick={() => {
+                                        setSelectedBenefit(b)
+                                        navigate('/plan')
+                                    }}
+                                    style={{ width: '100%' }}
+                                >
+                                    View plan →
+                                </button>
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            )}
 
-            <div className="actions" style={{ marginTop: 20 }}>
-                <button className="btn ghost" onClick={() => navigate('/')}>Back to Home</button>
+            <div className="actions" style={{ marginTop: '32px' }}>
+                <button className="btn ghost" onClick={() => navigate('/')}>← Back to Home</button>
             </div>
         </div>
     )
