@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useBenefit } from '../context/BenefitContext'
 import { generatePlan } from '../services/ai'
 import { useNavigate } from 'react-router-dom'
+import { useToast } from '../context/ToastContext'
 
 export default function PlanScreen() {
     const { category, selectedBenefit, plan, setPlan } = useBenefit()
@@ -9,6 +10,7 @@ export default function PlanScreen() {
     const [error, setError] = useState(null)
     const abortRef = useRef(null)
     const navigate = useNavigate()
+    const toast = useToast()
 
     useEffect(() => {
         if (!selectedBenefit || !category) {
@@ -21,12 +23,14 @@ export default function PlanScreen() {
             abortRef.current = new AbortController()
             try {
                 const res = await generatePlan(category, selectedBenefit, abortRef.current.signal)
-                // res expected { steps: [...] }
                 setPlan(res.steps || [])
                 setLoading(false)
+                toast.push('Plan generated', { duration: 2200 })
             } catch (e) {
+                if (e?.name === 'AbortError') return
                 setError(e.message || 'Failed to generate plan')
                 setLoading(false)
+                toast.push('Plan generation failed', { duration: 3000 })
             }
         }
 
@@ -37,16 +41,18 @@ export default function PlanScreen() {
     function onRegenerate() {
         setPlan(null)
         setError(null)
-            // call effect again by generating directly
-            (async () => {
+        toast.push('Regenerating plan…', { duration: 1500, sticky: true })
+            ; (async () => {
                 setLoading(true)
                 try {
                     const res = await generatePlan(category, selectedBenefit)
                     setPlan(res.steps || [])
                     setLoading(false)
+                    toast.push('Plan regenerated', { duration: 2200 })
                 } catch (e) {
                     setError(e.message || 'Failed to generate plan')
                     setLoading(false)
+                    toast.push('Plan generation failed', { duration: 3000 })
                 }
             })()
     }

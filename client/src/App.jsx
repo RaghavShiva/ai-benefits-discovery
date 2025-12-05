@@ -5,7 +5,6 @@ import InputScreen from './screens/InputScreen'
 import ClassificationScreen from './screens/ClassificationScreen'
 import BenefitsList from './screens/BenefitsList'
 import PlanScreen from './screens/PlanScreen'
-import SeeAllBenefits from './screens/SeeAllBenefits'
 import Breadcrumbs from './components/Breadcrumbs'
 
 export default function App() {
@@ -23,7 +22,6 @@ export default function App() {
             <Route path="/classify" element={<ClassificationScreen />} />
             <Route path="/benefits" element={<BenefitsList />} />
             <Route path="/plan" element={<PlanScreen />} />
-            <Route path="/all-benefits" element={<SeeAllBenefits />} />
           </Routes>
         </main>
 
