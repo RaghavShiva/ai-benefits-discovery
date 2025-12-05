@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useBenefit } from '../context/BenefitContext'
 import { generatePlan } from '../services/ai'
 import { useNavigate } from 'react-router-dom'
+import LottieLoader from '../components/LottieLoader'
 
 export default function PlanScreen() {
     const { category, selectedBenefit, plan, setPlan } = useBenefit()
@@ -70,7 +71,7 @@ export default function PlanScreen() {
 
             {loading && (
                 <div className="loader">
-                    <div className="loader-spinner"></div>
+                    <LottieLoader size={60} />
                     <span>Generating personalized plan…</span>
                 </div>
             )}

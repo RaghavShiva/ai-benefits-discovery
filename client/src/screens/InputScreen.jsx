@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBenefit } from '../context/BenefitContext'
+import LottieLoader from '../components/LottieLoader'
 
 export default function InputScreen() {
   const { text, setText, setCategory, setClassificationMeta, setSelectedBenefit, setPlan } = useBenefit()
@@ -105,7 +106,7 @@ export default function InputScreen() {
           >
             {isSubmitting ? (
               <>
-                <div className="loader-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                <LottieLoader size={20} />
                 Processing...
               </>
             ) : (

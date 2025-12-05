@@ -177,25 +177,44 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
-  transition: var(--transition);
-  animation: cardSlideIn 0.4s ease-out;
+  transition: var(--transition-slow);
+  animation: cardSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card:hover {
   box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   border-color: var(--accent);
+}
+
+.card:hover::before {
+  transform: scaleX(1);
 }
 
 @keyframes cardSlideIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(20px) scale(0.98) rotateX(5deg);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotateX(0deg);
   }
 }
 
@@ -240,14 +259,34 @@ textarea.input {
 textarea.input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
-  transform: translateY(-1px);
-  transition: var(--transition);
+  box-shadow: 0 0 0 3px var(--accent-light), 0 4px 12px rgba(37, 99, 235, 0.1);
+  transform: translateY(-2px) scale(1.01);
+  transition: var(--transition-slow);
 }
 
 [data-theme='dark'] .input:focus,
 [data-theme='dark'] textarea.input:focus {
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.input,
+textarea.input {
+  transition: var(--transition);
+}
+
+.input:focus,
+textarea.input:focus {
+  animation: inputFocus 0.3s ease both;
+}
+
+@keyframes inputFocus {
+  0% {
+    box-shadow: 0 0 0 0 var(--accent-light);
+  }
+
+  100% {
+    box-shadow: 0 0 0 3px var(--accent-light), 0 4px 12px rgba(37, 99, 235, 0.1);
+  }
 }
 
 .input::placeholder,
@@ -290,12 +329,19 @@ textarea.input {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
+  transition: width 0.6s ease, height 0.6s ease;
+  pointer-events: none;
 }
 
 .btn:hover:not(:disabled)::before {
   width: 300px;
   height: 300px;
+}
+
+.btn:active:not(:disabled)::before {
+  width: 200px;
+  height: 200px;
+  transition: width 0.1s ease, height 0.1s ease;
 }
 
 .btn:hover:not(:disabled) {
@@ -370,6 +416,35 @@ textarea.input {
   gap: 12px;
   position: relative;
   overflow: hidden;
+  animation: benefitSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes benefitSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.benefit:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.benefit:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.benefit:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.benefit:nth-child(4) {
+  animation-delay: 0.4s;
 }
 
 .benefit::before {
@@ -379,20 +454,25 @@ textarea.input {
   left: 0;
   right: 0;
   height: 3px;
-  background: var(--accent);
+  background: linear-gradient(90deg, var(--accent), var(--accent-hover));
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .benefit:hover {
   border-color: var(--accent);
   box-shadow: var(--shadow-lg);
   transform: translateY(-6px) scale(1.02);
+  transition: var(--transition-slow);
 }
 
 .benefit:hover::before {
   transform: scaleX(1);
+}
+
+.benefit:active {
+  transform: translateY(-4px) scale(1.01);
 }
 
 [data-theme='dark'] .benefit {
@@ -417,10 +497,15 @@ textarea.input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  animation: pulse 2s ease-in-out infinite;
+  gap: 16px;
+  animation: fadeIn 0.3s ease both;
 }
 
+.loader span {
+  animation: fadeIn 0.5s ease 0.2s both;
+}
+
+/* Legacy loader-spinner - kept for backward compatibility but prefer LottieLoader */
 .loader-spinner {
   width: 20px;
   height: 20px;
@@ -540,7 +625,8 @@ textarea.input {
   border-left: 4px solid var(--accent);
   position: relative;
   transition: var(--transition-slow);
-  animation: slideInLeft 0.4s ease both;
+  animation: slideInLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: left center;
 }
 
 .steps li:nth-child(1) {
@@ -561,8 +647,13 @@ textarea.input {
 
 .steps li:hover {
   background: var(--surface-hover);
-  transform: translateX(6px);
-  box-shadow: var(--shadow-sm);
+  transform: translateX(8px) scale(1.02);
+  box-shadow: var(--shadow-md);
+  border-left-width: 6px;
+}
+
+.steps li:active {
+  transform: translateX(4px) scale(1.01);
 }
 
 [data-theme='dark'] .steps li:hover {
@@ -575,9 +666,21 @@ textarea.input {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   transition: var(--transition-slow);
-  animation: scaleIn 0.4s ease both;
+  animation: confidenceBoxIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   position: relative;
   overflow: hidden;
+}
+
+@keyframes confidenceBoxIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .confidence-box::after {
@@ -587,12 +690,18 @@ textarea.input {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .confidence-box:hover::after {
   left: 100%;
+}
+
+.confidence-box {
+  position: relative;
+  overflow: hidden;
 }
 
 .confidence-box.high {
@@ -632,13 +741,37 @@ textarea.input {
   color: #fff;
   font-weight: 700;
   font-size: 1.125rem;
-  animation: scaleIn 0.3s ease 0.2s both, pulse 2s ease-in-out infinite 0.5s;
+  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both, pulse 2s ease-in-out infinite 0.8s;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: var(--transition);
+  transition: var(--transition-slow);
+  position: relative;
+}
+
+.confidence-badge::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: ripple 2s ease-out infinite;
 }
 
 .confidence-badge:hover {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.15) rotate(10deg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
 }
 
 .confidence-badge.high {
@@ -675,7 +808,14 @@ textarea.input {
   background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  animation: slideInRight 0.4s ease both;
+  animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: var(--transition);
+}
+
+.clarify-box:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(4px);
 }
 
 [data-theme='dark'] .clarify-box {
@@ -688,7 +828,42 @@ textarea.input {
   background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--accent);
-  animation: slideInRight 0.4s ease both;
+  animation: clarifyResultIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  position: relative;
+  overflow: hidden;
+}
+
+.clarify-result::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--accent);
+  animation: slideDown 0.5s ease both;
+}
+
+@keyframes clarifyResultIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    height: 0;
+  }
+
+  to {
+    height: 100%;
+  }
 }
 
 [data-theme='dark'] .clarify-result {
@@ -700,7 +875,7 @@ textarea.input {
   position: absolute;
   left: 20px;
   top: 16px;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: #fff;
   width: 24px;
   height: 24px;
@@ -710,6 +885,14 @@ textarea.input {
   justify-content: center;
   font-weight: 600;
   font-size: 0.875rem;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  transition: var(--transition);
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.steps li:hover::before {
+  transform: scale(1.15) rotate(360deg);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .footer {
@@ -792,55 +975,6 @@ textarea.input {
   }
 }
 
-/* Toasts */
-.toast-viewport {
-  position: fixed;
-  right: 20px;
-  top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  z-index: 9999;
-  max-width: 400px;
-}
-
-.toast {
-  background: #ffffff;
-  color: #1f2937;
-  padding: 14px 18px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transform-origin: top right;
-  animation: toastIn 0.25s ease;
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  transition: var(--transition);
-}
-
-[data-theme='dark'] .toast {
-  background: var(--card);
-  color: var(--text);
-  border-color: var(--border);
-}
-
-.toast:hover {
-  transform: translateX(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-@keyframes toastIn {
-  from {
-    opacity: 0;
-    transform: translateX(20px) scale(0.95);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
 
 /* Skeleton loading */
 .skeleton {
@@ -904,11 +1038,6 @@ textarea.input {
     width: 100%;
   }
 
-  .toast-viewport {
-    right: 16px;
-    left: 16px;
-    max-width: none;
-  }
 
   .header {
     padding: 16px 20px;

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBenefit } from '../context/BenefitContext'
 import { classify, askClarifyingQuestion } from '../services/ai'
+import LottieLoader from '../components/LottieLoader'
 
 export default function ClassificationScreen() {
   const { text, setCategory, setClassificationMeta } = useBenefit()
@@ -93,7 +94,7 @@ export default function ClassificationScreen() {
 
       {loading && (
         <div className="loader">
-          <div className="loader-spinner"></div>
+          <LottieLoader size={60} />
           <span>Analyzing your health need with AI…</span>
         </div>
       )}
@@ -152,7 +153,7 @@ export default function ClassificationScreen() {
                     <button className="btn" onClick={handleAskClarification} disabled={askingClarification}>
                       {askingClarification ? (
                         <>
-                          <div className="loader-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                          <LottieLoader size={20} />
                           Asking...
                         </>
                       ) : (
@@ -225,7 +226,7 @@ export default function ClassificationScreen() {
                   <button className="btn" onClick={handleAskClarification} disabled={askingClarification}>
                     {askingClarification ? (
                       <>
-                        <div className="loader-spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+                        <LottieLoader size={20} />
                         Asking...
                       </>
                     ) : (
