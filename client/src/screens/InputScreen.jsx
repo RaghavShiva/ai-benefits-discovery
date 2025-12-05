@@ -1,12 +1,31 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBenefit } from '../context/BenefitContext'
 
 export default function InputScreen() {
-  const { setText, setCategory, setClassificationMeta, setSelectedBenefit, setPlan } = useBenefit()
+  const { text, setText, setCategory, setClassificationMeta, setSelectedBenefit, setPlan } = useBenefit()
   const [value, setValue] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const navigate = useNavigate()
+
+  // Pre-populate input with existing text if available (for editing)
+  // This allows users to edit their input when clicking "Edit my input"
+  useEffect(() => {
+    if (text) {
+      setValue(text)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Only run on mount to avoid overwriting user edits
+
+  // Function to clear input and start fresh
+  function handleClear() {
+    setValue('')
+    setText('')
+    setCategory(null)
+    setClassificationMeta(null)
+    setSelectedBenefit(null)
+    setPlan(null)
+  }
 
   function onSubmit(e) {
     e.preventDefault()
@@ -30,7 +49,20 @@ export default function InputScreen() {
 
   return (
     <div className="card fade-in">
-      <h2>What's your health need?</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h2 style={{ margin: 0 }}>What's your health need?</h2>
+        {text && (
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={handleClear}
+            style={{ fontSize: '0.875rem', padding: '8px 12px' }}
+            title="Clear and start fresh"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       <p className="muted" style={{ marginBottom: '20px' }}>
         Describe your health concern or question, and we'll help you discover relevant benefits.
       </p>

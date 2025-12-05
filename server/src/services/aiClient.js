@@ -91,42 +91,102 @@ You are a health benefits classifier. Analyze the user's health-related need and
 Available categories:
 ${ALLOWED.filter(c => c !== 'Unknown').join(', ')}
 
-IMPORTANT: Return ONLY the category name as JSON. Do not include any explanation or additional text.
+IMPORTANT: Return the category name AND a confidence score (0.0 to 1.0) as JSON.
 
 Return EXACTLY this format (nothing else):
-{"category":"<category_name>"}
+{"category":"<category_name>","confidence":<0.0-1.0>}
 
 User's health need:
 "${String(text).trim()}"
 
-Rules:
-- Choose the most appropriate single category
-- If the need doesn't clearly fit any category, return "OPD" (Outpatient Department)
+Classification Rules:
+1. Choose the most appropriate single category based on the symptoms/needs described
+2. OPD (Outpatient/General Care) should be used for:
+   - General health concerns that don't fit specific categories
+   - Vague or unclear statements (e.g., "I need help", "something is wrong", "not feeling well" without specifics)
+   - Multiple unrelated symptoms that don't point to a specific category
+3. Specific categories (Dental, Vision, Mental Health, etc.) should be used when:
+   - Clear symptoms are mentioned (e.g., "tooth pain", "eye problems", "anxiety")
+   - The description clearly indicates a specific health domain
+
+Confidence Scoring:
+- 0.8-1.0: Very clear and specific symptoms (e.g., "I have severe tooth pain and bleeding gums")
+- 0.6-0.8: Clear symptoms but could be more specific (e.g., "I have high fever, cold and cough")
+- 0.4-0.6: Somewhat vague but has some specific symptoms (e.g., "not feeling well, might be sick")
+- 0.2-0.4: Very vague with minimal specifics (e.g., "I need help with something", "feeling unwell")
+- 0.0-0.2: Extremely vague or nonsensical (e.g., "help", "what", "issue")
+
+IMPORTANT:
+- Genuine health statements with specific symptoms (fever, cough, pain, etc.) should get confidence >= 0.5
+- Only truly vague statements (no specific symptoms, just "help" or "not feeling good" alone) should get confidence < 0.2
+- OPD can have high confidence if it's a genuine general health concern with specific symptoms
 - Return ONLY the JSON object, no other text
   `.trim();
 
     const callLLM = async () => {
-        const raw = await callModel(promptText, { temperature: 0.0, maxOutputTokens: 120 });
+        const raw = await callModel(promptText, { temperature: 0.1, maxOutputTokens: 150 });
         const parsed = tryParseJSON(raw);
 
         if (parsed?.category) {
             const cat = parsed.category.trim();
             const category = ALLOWED.includes(cat) ? cat : 'OPD';
-            const confidence = category === cat ? 0.9 : 0.6;
+
+            // Use AI-provided confidence if available and valid, otherwise calculate
+            let confidence = parsed.confidence;
+            if (typeof confidence !== 'number' || confidence < 0 || confidence > 1) {
+                // Fallback confidence calculation based on input analysis
+                const textLower = String(text).toLowerCase().trim();
+
+                // Check for specific health symptoms/indicators
+                const specificSymptoms = [
+                    'fever', 'cough', 'cold', 'pain', 'ache', 'headache', 'tooth', 'eye', 'vision',
+                    'anxiety', 'stress', 'depression', 'therapy', 'mental', 'dental', 'maternity',
+                    'chronic', 'physiotherapy', 'physio', 'symptoms', 'diagnosis', 'treatment'
+                ];
+
+                // Check for vague indicators
+                const vagueIndicators = ['help', 'need help', 'what can', 'how to', 'problem', 'issue',
+                    'something wrong', 'not sure', 'maybe', 'think', 'feel like'];
+
+                const hasSpecificSymptoms = specificSymptoms.some(symptom => textLower.includes(symptom));
+                const isVague = vagueIndicators.some(indicator => textLower.includes(indicator)) &&
+                    !hasSpecificSymptoms && textLower.length < 25;
+
+                if (category === 'OPD') {
+                    // OPD: high confidence if has specific symptoms, low if vague
+                    confidence = hasSpecificSymptoms ? 0.65 : (isVague ? 0.25 : 0.5);
+                } else {
+                    // Specific categories: higher confidence if symptoms match
+                    confidence = hasSpecificSymptoms ? 0.75 : (isVague ? 0.4 : 0.6);
+                }
+            }
+
+            // Ensure confidence is within bounds
+            confidence = Math.max(0, Math.min(1, confidence));
+
+            // Don't artificially reduce OPD confidence - let AI determine it
+            // OPD can have high confidence for genuine general health concerns
+
             return { raw, category, confidence };
         }
 
+        // Fallback: try to extract category from raw response
         const lower = raw.toLowerCase();
         for (const c of ALLOWED) {
-            if (lower.includes(c.toLowerCase())) return { raw, category: c, confidence: 0.6 };
+            if (lower.includes(c.toLowerCase())) {
+                // Default to medium-low confidence for fallback matches
+                return { raw, category: c, confidence: 0.5 };
+            }
         }
-        return { raw, category: 'OPD', confidence: 0.45 };
+        // Default fallback: OPD with low confidence
+        return { raw, category: 'OPD', confidence: 0.35 };
     };
 
     try {
         return await withRetries(callLLM, 2, 600);
     } catch (e) {
-        return { raw: `LLM call failed: ${e}`, category: 'OPD', confidence: 0.45 };
+        // On error, return OPD with low confidence (red flag for clarification)
+        return { raw: `LLM call failed: ${e}`, category: 'OPD', confidence: 0.35 };
     }
 }
 

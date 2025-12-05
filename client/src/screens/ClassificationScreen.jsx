@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useBenefit } from '../context/BenefitContext'
 import { classify, askClarifyingQuestion } from '../services/ai'
-import { useToast } from '../context/ToastContext'
 
 export default function ClassificationScreen() {
   const { text, setCategory, setClassificationMeta } = useBenefit()
@@ -14,12 +13,17 @@ export default function ClassificationScreen() {
   const abortRef = useRef(null)
   const mountedRef = useRef(true)
   const navigate = useNavigate()
-  const toast = useToast()
 
   const confidence = detected?.confidence ?? 0
+  const category = detected?.category
+
+  // Confidence thresholds:
+  // - High (>= 0.6): Normal flow with green checkmark
+  // - Low (0.2 - 0.6): Warning with yellow badge
+  // - Very Low (< 0.2): Red error state - only for extremely vague inputs
   const isHighConfidence = confidence >= 0.6
-  const isLowConfidence = confidence >= 0.4 && confidence < 0.6
-  const isVeryLowConfidence = confidence < 0.4
+  const isLowConfidence = confidence >= 0.2 && confidence < 0.6
+  const isVeryLowConfidence = confidence < 0.2
 
   async function runClassify() {
     setError(null)
@@ -42,7 +46,6 @@ export default function ClassificationScreen() {
       if (e?.name === 'AbortError') return
       setLoading(false)
       setError(e?.message || 'classification failed')
-      toast.push('Classification failed', { duration: 3000 })
     }
   }
 
@@ -67,7 +70,6 @@ export default function ClassificationScreen() {
     } catch (e) {
       if (e?.name === 'AbortError') return
       setAskingClarification(false)
-      toast.push('Failed to get clarification', { duration: 3000 })
     }
   }
 
@@ -100,40 +102,14 @@ export default function ClassificationScreen() {
         <div className="fade-in" style={{ marginTop: 20 }}>
           {/* High Confidence (>= 0.6) - Normal Flow */}
           {isHighConfidence && (
-            <div style={{
-              padding: 20,
-              borderRadius: 'var(--radius-lg)',
-              border: '2px solid var(--accent)',
-              background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-              boxShadow: 'var(--shadow-md)'
-            }}>
+            <div className="confidence-box high">
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'var(--accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  fontWeight: '700',
-                  fontSize: '1.125rem'
-                }}>
+                <div className="confidence-badge high">
                   ✓
                 </div>
                 <h3 style={{ margin: 0, color: 'var(--text)' }}>{detected.category}</h3>
               </div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                background: '#fff',
-                borderRadius: 'var(--radius)',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}>
+              <div className="confidence-label">
                 <span style={{ color: 'var(--muted)' }}>Confidence:</span>
                 <span style={{ color: 'var(--accent)', fontWeight: '600' }}>
                   {Math.round(confidence * 100)}%
@@ -144,26 +120,9 @@ export default function ClassificationScreen() {
 
           {/* Low Confidence (0.4 - 0.6) - Show with warning */}
           {isLowConfidence && (
-            <div style={{
-              padding: 20,
-              borderRadius: 'var(--radius-lg)',
-              border: '2px solid var(--warning)',
-              background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-              boxShadow: 'var(--shadow-md)'
-            }}>
+            <div className="confidence-box low">
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'var(--warning)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  fontWeight: '700',
-                  fontSize: '1.125rem'
-                }}>
+                <div className="confidence-badge low">
                   ⚠
                 </div>
                 <div>
@@ -173,16 +132,7 @@ export default function ClassificationScreen() {
                   </p>
                 </div>
               </div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                background: '#fff',
-                borderRadius: 'var(--radius)',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}>
+              <div className="confidence-label">
                 <span style={{ color: 'var(--muted)' }}>Confidence:</span>
                 <span style={{ color: 'var(--warning)', fontWeight: '600' }}>
                   {Math.round(confidence * 100)}%
@@ -191,7 +141,7 @@ export default function ClassificationScreen() {
 
               {/* Clarifying Question Section */}
               {!clarifyingData && (
-                <div style={{ marginTop: '16px', padding: '16px', background: '#fff', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                <div className="clarify-box">
                   <p style={{ margin: '0 0 12px 0', fontSize: '0.9375rem', fontWeight: '500', color: 'var(--text)' }}>
                     Need clarification?
                   </p>
@@ -215,7 +165,7 @@ export default function ClassificationScreen() {
               )}
 
               {clarifyingData && (
-                <div style={{ marginTop: '16px', padding: '16px', background: '#fff', borderRadius: 'var(--radius)', border: '1px solid var(--accent)' }}>
+                <div className="clarify-result">
                   <p style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: '600', color: 'var(--accent)' }}>
                     Clarifying question:
                   </p>
@@ -232,58 +182,45 @@ export default function ClassificationScreen() {
             </div>
           )}
 
-          {/* Very Low Confidence (< 0.4) - Show OPD fallback */}
+          {/* Very Low Confidence (< 0.2 / 20%) - Only for extremely vague inputs */}
           {isVeryLowConfidence && (
-            <div style={{
-              padding: 20,
-              borderRadius: 'var(--radius-lg)',
-              border: '2px solid var(--error)',
-              background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
-              boxShadow: 'var(--shadow-md)'
-            }}>
+            <div className="confidence-box very-low">
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: 'var(--error)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  fontWeight: '700',
-                  fontSize: '1.125rem'
-                }}>
+                <div className="confidence-badge very-low">
                   ?
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, color: 'var(--text)' }}>OPD (General)</h3>
+                  <h3 style={{ margin: 0, color: 'var(--text)' }}>
+                    {category === 'OPD' ? 'OPD (General)' : category || 'OPD (General)'}
+                  </h3>
                   <p style={{ margin: '4px 0 0 0', fontSize: '0.875rem', color: 'var(--text-light)' }}>
-                    Very low confidence - needs clarification
+                    Very low confidence - your input seems extremely vague. We need more details.
                   </p>
                 </div>
               </div>
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '6px 12px',
-                background: '#fff',
-                borderRadius: 'var(--radius)',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                marginBottom: '16px'
-              }}>
+              <div className="confidence-label" style={{ marginBottom: '16px' }}>
                 <span style={{ color: 'var(--muted)' }}>Confidence:</span>
                 <span style={{ color: 'var(--error)', fontWeight: '600' }}>
                   {Math.round(confidence * 100)}%
                 </span>
               </div>
 
-              <div style={{ padding: '16px', background: '#fff', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+              <div className="clarify-box">
                 <p style={{ margin: '0 0 12px 0', fontSize: '0.9375rem', fontWeight: '500', color: 'var(--text)' }}>
-                  We need more information to help you better.
+                  Your input is too vague. Please provide specific details about your health concern, such as:
                 </p>
+                <ul style={{
+                  margin: '0 0 16px 20px',
+                  padding: 0,
+                  fontSize: '0.875rem',
+                  color: 'var(--text-light)',
+                  lineHeight: '1.6'
+                }}>
+                  <li>Specific symptoms (fever, pain, cough, etc.)</li>
+                  <li>Duration of the problem</li>
+                  <li>Location or affected area</li>
+                  <li>Any related concerns</li>
+                </ul>
                 <div className="actions" style={{ marginTop: '12px' }}>
                   <button className="btn" onClick={handleAskClarification} disabled={askingClarification}>
                     {askingClarification ? (
@@ -300,7 +237,7 @@ export default function ClassificationScreen() {
               </div>
 
               {clarifyingData && (
-                <div style={{ marginTop: '16px', padding: '16px', background: '#fff', borderRadius: 'var(--radius)', border: '1px solid var(--accent)' }}>
+                <div className="clarify-result">
                   <p style={{ margin: '0 0 8px 0', fontSize: '0.875rem', fontWeight: '600', color: 'var(--accent)' }}>
                     Clarifying question:
                   </p>
@@ -317,9 +254,9 @@ export default function ClassificationScreen() {
             </div>
           )}
 
-          {/* Action buttons - only show proceed if high confidence or after clarification */}
+          {/* Action buttons - show proceed for high confidence or low confidence (not very low) */}
           <div className="actions" style={{ marginTop: 20 }}>
-            {(isHighConfidence || (clarifyingData && clarifyingData.confidence >= 0.4)) && (
+            {(isHighConfidence || isLowConfidence || (clarifyingData && clarifyingData.confidence >= 0.2)) && (
               <button className="btn" onClick={onProceed}>See recommended benefits</button>
             )}
             <button className="btn ghost" onClick={runClassify}>Regenerate</button>
@@ -332,7 +269,7 @@ export default function ClassificationScreen() {
         <div className="fade-in" style={{ marginTop: 20 }}>
           <div style={{
             padding: '20px',
-            background: '#f9fafb',
+            background: 'var(--surface-light)',
             borderRadius: 'var(--radius)',
             border: '2px dashed var(--border)',
             textAlign: 'center'
