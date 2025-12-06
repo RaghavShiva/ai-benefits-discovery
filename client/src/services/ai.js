@@ -1,6 +1,7 @@
 // minimal client calls to backend /api endpoints
+const API_BASE = import.meta.env.VITE_API_BASE;
 export async function classify(text, signal) {
-  const res = await fetch('/api/classify', {
+  const res = await fetch(`${API_BASE}/api/classify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text }),
@@ -11,7 +12,7 @@ export async function classify(text, signal) {
 }
 
 export async function generatePlan(category, benefit, signal) {
-  const res = await fetch('/api/plan', {
+  const res = await fetch(`${API_BASE}/api/plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ category, benefit }),
@@ -22,7 +23,7 @@ export async function generatePlan(category, benefit, signal) {
 }
 
 export async function askClarifyingQuestion(originalText, signal) {
-  const res = await fetch('/api/clarify', {
+  const res = await fetch(`${API_BASE}/api/clarify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text: originalText }),
